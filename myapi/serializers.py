@@ -46,16 +46,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         } 
     User
 
-    def validate(self, data):
-        if User.objects.filter(username = data['username']):
-            raise ValidationError({'username':'มีผู้ใช้งาน username นี้แล้ว',}, status.HTTP_400_BAD_REQUEST)
+    def validate_password(self, password):
+        password2 = self.initial_data['password2'] 
+        # if User.objects.filter(username = data['username']):
+        #     raise ValidationError({'username':'มีผู้ใช้งาน username นี้แล้ว',}, status.HTTP_400_BAD_REQUEST)
         
-        if len(data['password']) < 8:
+        if len(password) < 8:
             raise ValidationError({'password':'กรุณาใส่ password มากกว่า 8 ตัว'}, status.HTTP_400_BAD_REQUEST)
         
-        if data['password'] == data['password2']:
+        if password == password2:
             raise ValidationError({'password':'password ไม่ตรงกัน'}, status.HTTP_400_BAD_REQUEST)
-        return data
+        return password
 
     def create(self, validated_data):
         user = User.objects.create_user(username = validated_data['username'],

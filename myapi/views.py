@@ -2,6 +2,7 @@
 from django.conf.urls import url
 from django.contrib.auth.models import Permission, User
 from django.http import request
+from django.http.response import HttpResponse
 from django.utils.encoding import filepath_to_uri
 import django_filters
 from django_filters.filters import LookupChoiceFilter
@@ -74,6 +75,8 @@ class RegisterApi(generics.GenericAPIView):
     serializer_class = RegisterSerializer
     
     def post(self, request, *args,  **kwargs):
+        import sys
+        print(len(request.data['username']), file=sys.stderr)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -193,15 +196,6 @@ class ProductList(generics.ListAPIView):
 
         return queryset
 
-    def __init__(self, **kwargs):
-        self.response_format = ResponseInfoProduct().response
-        super(ProductList, self).__init__(**kwargs)
-
-    def list(self, request, *args, **kwargs):
-        response_data = super(ProductList, self).list(request, *args, **kwargs)
-        self.response_format["data"] = response_data.data
-        return Response(self.response_format)
-
 class ProductDetail(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductDetailSerializer
@@ -290,23 +284,24 @@ class CartDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Cart.objects.all()
     serializer_class = CartDetailSerializer
 
-    def update(self, request, pk):
-        try:
-            cartlist = Cart.objects.get(id=pk)
-            data = request.data
-            cartlist.total = int(data['quantity'])*(cartlist.product.price)
-            cartlist.quantity = data['quantity']
+    # def update(self, request, pk):
+        # try:
+        #     cartlist = self.queryset
+        #     return HttpResponse(cartlist)
+            # data = request.data
+            # cartlist.total = int(data['quantity'])*(cartlist.product.price)
+            # cartlist.quantity = data['quantity']
 
-            if int(cartlist.quantity) == 0 :
-                cartlist.delete()
-                cartlist.save()
-                return Response({'msg':'ลบสำเร็จ'})
+            # if int(cartlist.quantity) == 0 :
+            #     cartlist.delete()
+            #     cartlist.save()
+            #     return Response({'msg':'ลบสำเร็จ'})
             
-            else:
-                cartlist.save()
-                return Response(CartDetailSerializer(cartlist).data)
-        except:
-            raise NotFound()
+            # else:
+            #     cartlist.save()
+            #     return Response(CartDetailSerializer(cartlist).data)
+        # except:
+        #     raise NotFound()
 
     
 # class CartDetail(generics.DestroyAPIView):
